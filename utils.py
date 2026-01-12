@@ -76,3 +76,7 @@ def clean_columns(ds):
         
     return ds.select_columns(['text'])
 
+
+def round_up(x, m=8):
+    return ((x + m - 1) // m) * m
+
