@@ -55,3 +55,24 @@ def load_synthetic_data(file_path):
         for line in f:
             data.append(json.loads(line))
     return data
+
+
+def clean_columns(ds):
+    # 'the-stack' uses 'content', others use 'text' or 'line'
+    if 'content' in ds.column_names:
+        ds = ds.rename_column('content', 'text')
+    elif 'line' in ds.column_names:
+        ds = ds.rename_column('line', 'text')
+    # sft -> text
+    elif 'question' in ds.column_names and 'answer' in ds.column_names:
+        def merge_qa(example):
+            example['text'] = f"Question: {example['question']}\nAnswer: {example['answer']}"
+            return example
+        ds = ds.map(merge_qa)
+    
+    # Check if 'text' exists, otherwise throw error
+    if 'text' not in ds.column_names:
+        raise ValueError(f"Dataset has missing 'text' column. Found: {ds.column_names}")
+        
+    return ds.select_columns(['text'])
+
